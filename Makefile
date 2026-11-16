@@ -17,7 +17,7 @@ SQLITE_URL = "https://www.sqlite.org/2024/sqlite-autoconf-$(SQLITE_VERSION).tar.
 PROJ_URL = "http://download.osgeo.org/proj/proj-$(PROJ_VERSION).tar.gz"
 GEOS_URL = "http://download.osgeo.org/geos/geos-$(GEOS_VERSION).tar.bz2"
 SPATIALITE_URL = "http://www.gaia-gis.it/gaia-sins/libspatialite-sources/libspatialite-$(SPATIALITE_VERSION).tar.gz"
-ZLIB_URL = "http://zlib.net/zlib-$(ZLIB_VERSION).tar.gz"
+ZLIB_URL = "https://zlib.net/fossils/zlib-$(ZLIB_VERSION).tar.gz"
 GDAL_URL = "https://github.com/OSGeo/gdal/releases/download/v$(GDAL_VERSION)/gdal-$(GDAL_VERSION).tar.gz"
 TIFF_URL = "http://download.osgeo.org/libtiff/tiff-$(TIFF_VERSION).tar.gz"
 JPEG_URL = "https://github.com/libjpeg-turbo/libjpeg-turbo/releases/download/$(JPEG_VERSION)/libjpeg-turbo-$(JPEG_VERSION).tar.gz"
@@ -85,7 +85,7 @@ $(GDAL_SRC)/build/Makefile: $(ROOT_DIR)/lib/libsqlite3.a $(ROOT_DIR)/lib/libproj
 	mkdir build; \
 	cd build; \
 	$(EMCMAKE) cmake .. $(PREFIX_CMAKE) -DBUILD_SHARED_LIBS=OFF -DCMAKE_BUILD_TYPE=Release \
-        -DBUILD_APPS=OFF \
+        -DBUILD_APPS=OFF -DBUILD_PYTHON_BINDINGS=OFF -DBUILD_JAVA_BINDINGS=OFF -DBUILD_CSHARP_BINDINGS=OFF -DBUILD_TESTING=OFF \
         -DOGR_ENABLE_DRIVER_GPSBABEL=OFF \
         -DCMAKE_PREFIX_PATH=$(ROOT_DIR) -DCMAKE_FIND_ROOT_PATH=$(ROOT_DIR) \
         -DGDAL_USE_HDF5=OFF -DGDAL_USE_HDFS=OFF -DACCEPT_MISSING_SQLITE3_MUTEX_ALLOC=ON \
@@ -261,7 +261,7 @@ $(ROOT_DIR)/lib/libtiff.a: $(TIFF_SRC)/Makefile
 	cd $(TIFF_SRC); \
 	$(EMMAKE) make install;
 
-$(TIFF_SRC)/Makefile: $(ROOT_DIR)/lib/libz.a $(ROOT_DIR)/lib/libjpeg.a $(ROOT_DIR)/lib/libzstd.a $(ROOT_DIR)/lib/libLerc.a $(TIFF_SRC)/configure
+$(TIFF_SRC)/Makefile: $(ROOT_DIR)/lib/libz.a $(ROOT_DIR)/lib/libjpeg.a $(ROOT_DIR)/lib/libzstd.a $(ROOT_DIR)/lib/libLerc.a $(ROOT_DIR)/lib/libwebp.a $(TIFF_SRC)/configure
 	cd $(TIFF_SRC); \
 	$(EMCONFIGURE) ./configure $(PREFIX) --enable-shared=no --disable-docs \
 	--with-zlib-include-dir=${ROOT_DIR}/include \
@@ -271,7 +271,10 @@ $(TIFF_SRC)/Makefile: $(ROOT_DIR)/lib/libz.a $(ROOT_DIR)/lib/libjpeg.a $(ROOT_DI
 	--with-zstd-include-dir=${ROOT_DIR}/include \
 	--with-zstd-lib-dir=${ROOT_DIR}/lib \
 	--with-lerc-include-dir=${ROOT_DIR}/include \
-	--with-lerc-lib-dir=${ROOT_DIR}/lib;
+	--with-lerc-lib-dir=${ROOT_DIR}/lib \
+	--enable-webp \
+	--with-webp-include-dir=${ROOT_DIR}/include \
+	--with-webp-lib-dir=${ROOT_DIR}/lib;
 
 $(TIFF_SRC)/configure:
 	mkdir -p $(SRC_DIR); \
@@ -406,12 +409,12 @@ ZLIB_SRC = $(SRC_DIR)/zlib-$(ZLIB_VERSION)
 zlib: $(ROOT_DIR)/lib/libz.a
 
 $(ROOT_DIR)/lib/libz.a: $(ZLIB_SRC)/Makefile
-	export PATH=$(ROOT_DIR)/bin:$(PATH); \
+	export PATH="$(ROOT_DIR)/bin:$$PATH"; \
 	cd $(ZLIB_SRC); \
 	$(EMMAKE) make install;
 
 $(ZLIB_SRC)/Makefile: $(ZLIB_SRC)/configure
-	export PATH=$(ROOT_DIR)/bin:$(PATH); \
+	export PATH="$(ROOT_DIR)/bin:$$PATH"; \
 	cd $(ZLIB_SRC); \
 	$(EMCONFIGURE) ./configure $(PREFIX) --static;
 

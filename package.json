@@ -96,5 +96,6 @@
     "dependencies": {
         "detect-node": "^2.1.0",
         "xml-js": "^1.6.11"
-    }
+    },
+    "packageManager": "pnpm@8.15.9"
 }

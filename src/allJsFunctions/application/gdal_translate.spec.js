@@ -75,4 +75,24 @@ describe('application / gdal_translate', function () {
         const firstDataset2 = result2.datasets[0];
         assert.strictEqual(firstDataset2.pointer > 0, true, 'An error occurred while converting the file. (ptr == 0)');
     });
+    // Lossy COGs: WEBP keeps an RGBA alpha band, JPEG turns the alpha band into an internal mask (3 bands).
+    [['WEBP', 4], ['JPEG', 3]].forEach(([compress, bands]) => {
+        it(`gdal_translate to a lossy COG (${compress})`, async function () {
+            let file = 'data/simple-polygon-line-point.tif';
+            if (!isNode) {
+                const fileData = await fetch(file);
+                file = new File([await fileData.blob()], 'simple-polygon-line-point.tif');
+            } else file = `test/${file}`;
+
+            const result = await Gdal.open(file);
+            const outputPath = await Gdal.gdal_translate(result.datasets[0], ['-of', 'COG', '-co', `COMPRESS=${compress}`, '-co', 'QUALITY=75'], `cog_${compress}`);
+            const result2 = await Gdal.open(outputPath.real);
+            const info = await Gdal.gdalinfo(result2.datasets[0]);
+            // RGB JPEG is written as YCbCr: GDAL reports "YCbCr JPEG"
+            assert.strictEqual(info.metadata.IMAGE_STRUCTURE.COMPRESSION.endsWith(compress), true, 'Wrong compression.');
+            assert.strictEqual(info.metadata.IMAGE_STRUCTURE.LAYOUT, 'COG', 'Not a COG.');
+            assert.strictEqual(info.bands.length, bands, `Expected ${bands} bands.`);
+            assert.strictEqual(info.bands[0].mask.flags.includes(bands === 4 ? 'ALPHA' : 'PER_DATASET'), true, 'Transparency lost.');
+        });
+    });
 });
