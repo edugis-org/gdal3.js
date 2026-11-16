@@ -1,11 +1,21 @@
 {
-    "name": "gdal3.js",
-    "version": "2.8.1",
-    "description": "gdal3.js is a port of Gdal applications (**gdal_translate**, **ogr2ogr**, **gdal_rasterize**, **gdalwarp**, **gdaltransform**) to Webassembly. It allows you to convert raster and vector geospatial data to various formats and coordinate systems.",
+    "name": "@edugis/gdal3.js",
+    "version": "2.8.1-webp.1",
+    "description": "gdal3.js 2.8.1 (GDAL 3.8.4) with lossy Cloud Optimized GeoTIFFs: JPEG, WEBP, ZSTD and LERC in TIFF. gdal3.js is a port of Gdal applications (**gdal_translate**, **ogr2ogr**, **gdal_rasterize**, **gdalwarp**, **gdaltransform**) to Webassembly. It allows you to convert raster and vector geospatial data to various formats and coordinate systems.",
     "license": "LGPL-2.1-or-later",
-    "homepage": "https://gdal3.js.org",
-    "repository": "https://github.com/bugra9/gdal3.js.git",
+    "homepage": "https://github.com/edugis-org/gdal3.js/tree/release-2.8-webp-cog#readme",
+    "repository": {
+        "type": "git",
+        "url": "git+https://github.com/edugis-org/gdal3.js.git"
+    },
+    "bugs": {
+        "url": "https://github.com/edugis-org/gdal3.js/issues"
+    },
     "private": false,
+    "publishConfig": {
+        "access": "public",
+        "tag": "latest"
+    },
     "keywords": [
         "gis",
         "geospatial",
@@ -44,7 +54,9 @@
         "build-docs": "jsdoc --configure .jsdoc.json --verbose && cp -r build/docs/gdal3.js/2.8.1/* build/docs",
         "test-node": "nyc --reporter=json --reporter=html --report-dir=./build/coverage/node mocha",
         "test-browser": "karma start .karma.conf.js",
-        "test-coverage": "istanbul-merge --out build/coverage/coverage-final.json build/coverage/browser/coverage-final.json build/coverage/node/coverage-final.json && nyc report --reporter html -t build/coverage --report-dir build/coverage"
+        "test-coverage": "istanbul-merge --out build/coverage/coverage-final.json build/coverage/browser/coverage-final.json build/coverage/node/coverage-final.json && nyc report --reporter html -t build/coverage --report-dir build/coverage",
+        "dist-package": "rm -rf dist && mkdir -p dist && cp -r build/package dist/package",
+        "prepack": "test -f dist/package/gdal3WebAssembly.wasm || (echo 'run pnpm run dist-package first' && exit 1)"
     },
     "devDependencies": {
         "@babel/cli": "^7.23.4",

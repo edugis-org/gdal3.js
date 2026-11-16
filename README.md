@@ -1,3 +1,42 @@
+# @edugis/gdal3.js: gdal3.js with lossy COG
+
+This is a fork of [gdal3.js](https://github.com/bugra9/gdal3.js) (bugra9), published by EduGIS for
+[PolderGIS](https://github.com/anneb/poldergis). It is gdal3.js 2.8.1 (GDAL 3.8.4) plus the TIFF codecs needed for
+**lossy Cloud Optimized GeoTIFFs** in the browser and in Node.js. The upstream README follows below.
+
+| | `gdal3.js@2.8.1` | `@edugis/gdal3.js@2.8.1-webp.1` |
+|---|---|---|
+| GDAL / PROJ / GEOS | 3.8.4 / 9.3.1 / 3.12.1 | same |
+| TIFF compression | DEFLATE, LZW, PACKBITS, … | also **JPEG**, **WEBP**, ZSTD, LERC, LERC_ZSTD |
+| `gdal3WebAssembly.wasm` | 28.2 MB (9.1 MB gzip) | 29.2 MB (9.3 MB gzip) |
+
+What changed, compared to the 2.8.1 release:
+
+- Unreleased upstream work on `master`: libjpeg-turbo, zstd and LERC in libtiff/GDAL (#105, #107, #108), `clearFS()` (#109),
+  an absolute `path` in Node, and a fix for a memory leak in the worker (#104).
+- This fork: libtiff is built with WebP (`--enable-webp`), so `COMPRESS=WEBP` works in the GTiff and COG drivers.
+  Plus build fixes (zlib download URL, quoted `PATH`) and tests for a COG with WEBP and with JPEG.
+
+```js
+const out = await Gdal.gdal_translate(dataset, ['-of', 'COG', '-co', 'COMPRESS=WEBP', '-co', 'QUALITY=75']);
+// WEBP: 3 or 4 Byte bands (an alpha band is kept). JPEG: 1 or 3 bands, an alpha band becomes an internal mask.
+// In the COG driver, WEBP with QUALITY=100 is lossless.
+```
+
+**Install it under the name `gdal3.js`** (an npm alias), so imports, `gdal3.js/node` and asset paths stay the same.
+In Node, the wasm is looked up in `node_modules/gdal3.js/dist/package` unless you pass `path`:
+
+```bash
+npm install gdal3.js@npm:@edugis/gdal3.js@2.8.1-webp.1
+```
+
+**Source and licence.** Source code: [edugis-org/gdal3.js, branch `release-2.8-webp-cog`](https://github.com/edugis-org/gdal3.js/tree/release-2.8-webp-cog).
+Build: `make && pnpm install && pnpm run build-src && pnpm run dist-package` (emsdk 3.1.51; see the Makefile).
+Licence: LGPL-2.1-or-later, the same as gdal3.js; the bundled libraries keep their own licences.
+Issues with this build go to edugis-org/gdal3.js, not to upstream.
+
+---
+
 # gdal3.js - Gdal compiled to JavaScript
 [![npm](https://img.shields.io/npm/v/gdal3.js?style=for-the-badge)](https://www.npmjs.com/package/gdal3.js)
 
